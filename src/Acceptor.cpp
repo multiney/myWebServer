@@ -26,7 +26,7 @@ Acceptor::~Acceptor() {
 void Acceptor::acceptConnection() {
     InetAddress *clnt_addr = new InetAddress();
     Socket *clnt_sock = new Socket(sock->accept(clnt_addr));
-    printf("new client fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr->addr.sin_addr), ntohs(clnt_addr->addr.sin_port));
+    printf("new client fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr->getAddr().sin_addr), ntohs(clnt_addr->getAddr().sin_port));
     clnt_sock->setnonblocking();
     newConnectionCallback(clnt_sock);
     delete clnt_addr;

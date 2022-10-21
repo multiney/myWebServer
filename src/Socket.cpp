@@ -22,8 +22,11 @@ Socket::~Socket() {
     }
 }
 
-void Socket::bind(InetAddress *addr) {
-    errif(::bind(fd, (sockaddr*)&addr->addr, addr->addr_len) == -1, "socket bind error");
+void Socket::bind(InetAddress *_addr) {
+    struct sockaddr_in addr = _addr->getAddr();
+    socklen_t addr_len = _addr->getAddr_len();
+    errif(::bind(fd, (sockaddr*)&addr, addr_len) == -1, "socket bind error");
+    _addr->setInetAddr(addr, addr_len); // TODO: why do that?
 }
 
 void Socket::listen() {
@@ -34,14 +37,19 @@ void Socket::setnonblocking() {
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 }
 
-int Socket::accept(InetAddress *addr) {
-    int clnt_sockfd = ::accept(fd, (sockaddr*)&addr->addr, &addr->addr_len);
+int Socket::accept(InetAddress *_addr) {
+    struct sockaddr_in addr = _addr->getAddr();
+    socklen_t addr_len = _addr->getAddr_len();
+    int clnt_sockfd = ::accept(fd, (sockaddr*)&addr, &addr_len);
     errif(clnt_sockfd == -1, "socket accept error");
+    _addr->setInetAddr(addr, addr_len);
     return clnt_sockfd;
 }
 
-void Socket::connect(InetAddress *addr) {
-    errif(::connect(fd, (sockaddr*)&addr->addr, addr->addr_len) == -1, "socket connect error");
+void Socket::connect(InetAddress *_addr) {
+    struct sockaddr_in addr = _addr->getAddr(); // TODO: '_addr->getAddr()' why temporary?
+    socklen_t addr_len = _addr->getAddr_len();
+    errif(::connect(fd, (sockaddr*)&addr, addr_len) == -1, "socket connect error");
 }
 
 int Socket::getFd() {
