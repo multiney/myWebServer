@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <strings.h>
 #include <sys/socket.h>
@@ -5,43 +6,50 @@
 #include <string.h>
 #include <unistd.h>
 #include "src/util.h"
+#include "src/Buffer.h"
+#include "src/Socket.h"
+#include "src/InetAddress.h"
 
 #define BUF_SIZE 1024
 
 int main (int argc, char *argv[])
 {
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    errif(sockfd == -1, "socket create error");
+    Socket *sock = new Socket();
+    InetAddress *addr = new InetAddress("127.0.0.1", 8888);
+    sock->connect(addr);
 
-    struct sockaddr_in serv_addr;
-    bzero(&serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serv_addr.sin_port = htons(8888);
+    int sockfd = sock->getFd();
 
-    errif(connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
+    Buffer *sendBuffer = new Buffer();
+    Buffer *readBuffer = new Buffer();
 
-    char buf[BUF_SIZE];
     while (true) {
-        scanf("%s", buf);
-        ssize_t write_bytes = write(sockfd, buf, strlen(buf));
+        sendBuffer->getline();
+        ssize_t write_bytes = write(sockfd, sendBuffer->c_str(), sendBuffer->size());
         if (write_bytes == -1) {
-            printf("socket already disconnected, can't write any more!\n");
+            printf("socket already disconnected, can't write any more\n");
             break;
         }
-        ssize_t read_bytes = read(sockfd, buf, write_bytes);
-        buf[read_bytes] = 0;
-        if (read_bytes > 0)
-            printf("message from server: %s\n", buf);
-        else if (read_bytes == 0) {
-            printf("server socket disconnected!\n");
-            break;
+        int already_read = 0;
+        char buf[BUF_SIZE];
+        while (true) {
+            bzero(&buf, sizeof(buf));
+            ssize_t read_bytes = read(sockfd, buf, sizeof(buf));
+            if (read_bytes > 0) {
+                readBuffer->append(buf, sizeof(buf));
+                already_read += read_bytes;
+            } else if (read_bytes == 0) {
+                printf("server disconnected!\n");
+                exit(EXIT_SUCCESS);
+            }
+            if (already_read >= sendBuffer->size()) {
+                printf("message from server: %s\n", readBuffer->c_str());
+                break;
+            }
         }
-        else if (read_bytes == -1) {
-            close(sockfd);
-            errif(true, "socket read error");
-        }
+        readBuffer->clear();
     }
-    close(sockfd);
+    delete addr;
+    delete sock;
     return 0;
 }

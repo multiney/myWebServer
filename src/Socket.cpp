@@ -40,6 +40,10 @@ int Socket::accept(InetAddress *addr) {
     return clnt_sockfd;
 }
 
+void Socket::connect(InetAddress *addr) {
+    errif(::connect(fd, (sockaddr*)&addr->addr, addr->addr_len) == -1, "socket connect error");
+}
+
 int Socket::getFd() {
     return fd;
 }
