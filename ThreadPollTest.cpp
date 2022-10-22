@@ -14,7 +14,7 @@ void test() {
 
 int main (int argc, char *argv[])
 {
-    ThreadPoll *poll = new ThreadPoll(2);
+    ThreadPoll *poll = new ThreadPoll(1);
     std::function<void()> func = std::bind(print, 1, 3.14, "hello", std::string("world"));
     poll->add(func);
     func = test;

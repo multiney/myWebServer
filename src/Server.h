@@ -17,5 +17,5 @@ public:
     ~Server();
 
     void newConnection(Socket *serv_sock);
-    void deleteConnection(Socket *sock);
+    void deleteConnection(int sockfd);
 };
