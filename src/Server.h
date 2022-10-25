@@ -5,6 +5,7 @@
 class EventLoop;
 class Acceptor;
 class Connection;
+class Socket;
 class Server
 {
 private:
@@ -15,5 +16,6 @@ public:
     Server(EventLoop *_loop);
     ~Server();
 
-    void newConnection(int sockfd);
+    void newConnection(Socket*);
+    void delConnection(Socket*);
 };

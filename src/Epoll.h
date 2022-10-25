@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+class Channel;
 class Epoll
 {
 private:
@@ -8,4 +10,7 @@ private:
 public:
     Epoll();
     ~Epoll();
+
+    void updateChannel(Channel*);
+    std::vector<Channel*> poll(int timeout = -1);
 };

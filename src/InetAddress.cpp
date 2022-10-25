@@ -11,12 +11,11 @@ InetAddress::InetAddress() {
 InetAddress::InetAddress(const char *ip, uint16_t port) {
     bzero(&addr, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_addr.s_addr = inet_addr(ip);
     addr.sin_port = htons(port);
 }
 
 InetAddress::~InetAddress() {
-
 }
 
 void InetAddress::setInetAddress(sockaddr_in _addr) {

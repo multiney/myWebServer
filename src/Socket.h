@@ -12,8 +12,9 @@ public:
 
     void bind(InetAddress*);
     void listen();
+    int accept(InetAddress*);
+    void connect(InetAddress*);
     void setnonblocking();
 
-    int accept(InetAddress*);
     int getFd();
 };

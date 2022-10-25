@@ -15,7 +15,7 @@ Socket::Socket() :fd(-1) {
 }
 
 Socket::Socket(int _fd) : fd(_fd) {
-    errif(fd = -1, "socket create error");
+    errif(fd == -1, "socket create error");
 }
 
 Socket::~Socket() {
@@ -31,7 +31,7 @@ void Socket::bind(InetAddress *_addr) {
 }
 
 void Socket::listen() {
-    errif(::listen(fd, SOMAXCONN), "socket listen error");
+    errif(::listen(fd, SOMAXCONN) == -1, "socket listen error");
 }
 
 void Socket::setnonblocking() {
@@ -45,7 +45,13 @@ int Socket::accept(InetAddress *_addr) {
     socklen_t addr_len = sizeof(addr);
     int clnt_sockfd = ::accept(fd, (sockaddr*)&addr, &addr_len);
     errif(clnt_sockfd == -1, "socket accpet error");
+    _addr->setInetAddress(addr);
     return clnt_sockfd;
+}
+
+void Socket::connect(InetAddress *_addr) {
+    struct sockaddr_in addr = _addr->getAddr();
+    errif(::connect(fd, (sockaddr*)&addr, sizeof(addr)) == -1, "socket connect error");
 }
 
 int Socket::getFd() {
