@@ -1,4 +1,4 @@
-#include "Thread.h"
+#include "ThreadPool.h"
 #include <mutex>
 
 ThreadPool::ThreadPool(int size) : stop(false) {

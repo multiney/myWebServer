@@ -4,24 +4,35 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-Channel::Channel(EventLoop *_loop, int _fd) : loop(_loop), fd(_fd), events(0), ready(0), inEpoll(false) {
+Channel::Channel(EventLoop *_loop, int _fd)
+    : loop(_loop), fd(_fd), events(0), ready(0), inEpoll(false), useThreadPool(true) {
 
 }
 
 Channel::~Channel() {
 }
 
-void Channel::setCallback(std::function<void ()> _cb) {
-    callback = _cb;
+void Channel::setReadCallback(std::function<void ()> _cb) {
+    readCallback = _cb;
 }
 
 void Channel::enableRead() {
-    events |= EPOLLET | EPOLLIN;
+    events |= EPOLLIN | EPOLLPRI;
+    loop->updateChannel(this);
+}
+
+void Channel::useET() {
+    events |= EPOLLET;
     loop->updateChannel(this);
 }
 
 void Channel::handleEvent() {
-    callback();
+    if (ready & (EPOLLIN | EPOLLPRI)) {
+        if (useThreadPool)
+            loop->addThread(readCallback);
+        else
+            readCallback();
+    }
 }
 
 int Channel::getFd() {
@@ -44,6 +55,10 @@ bool Channel::getInEpoll() {
     return inEpoll;
 }
 
-void Channel::setInEpoll() {
-    inEpoll = true;
+void Channel::setInEpoll(bool _in) {
+    inEpoll = _in;
+}
+
+void Channel::setUseThreadPool(bool use) {
+    useThreadPool = use;
 }

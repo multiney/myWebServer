@@ -2,6 +2,7 @@
 #include "Channel.h"
 #include "Util.h"
 
+#include <cstddef>
 #include <strings.h>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -34,7 +35,7 @@ void Epoll::updateChannel(Channel *channel) {
         errif(epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1, "epoll modify error");
     } else {
         errif(epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event) == -1, "epoll add error");
-        channel->setInEpoll();
+        channel->setInEpoll(true);
     }
 }
 
@@ -48,4 +49,10 @@ std::vector<Channel*> Epoll::poll(int timeout) {
         activeChannels.push_back(ch);
     }
     return activeChannels;
+}
+
+void Epoll::deleteChannel(Channel *channel) {
+    int fd = channel->getFd();
+    errif(epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL) == -1, "epoll delete error");
+    channel->setInEpoll(false);
 }
