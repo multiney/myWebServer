@@ -2,28 +2,28 @@
 
 #include <iostream>
 
-void Buffer::append(const char *_str) {
-    buf.append(_str);
+void Buffer::Append(const char *_str) {
+    buf_.append(_str);
 }
 
-ssize_t Buffer::size() {
-    return buf.size();
+size_t Buffer::Size() {
+    return buf_.size();
 }
 
-const char* Buffer::c_str() {
-    return buf.c_str();
+const char* Buffer::CStr() {
+    return buf_.c_str();
 }
 
-void Buffer::clear() {
-    buf.clear();
+void Buffer::Clear() {
+    buf_.clear();
 }
 
-void Buffer::getLine() {
-    buf.clear();
-    std::getline(std::cin, buf);
+void Buffer::GetLine() {
+    buf_.clear();
+    std::getline(std::cin, buf_);
 }
 
-void Buffer::setBuf(const char* _buf) {
-    buf.clear();
-    buf.append(_buf);
+void Buffer::SetBuf(const char* _buf) {
+    buf_.clear();
+    buf_.append(_buf);
 }

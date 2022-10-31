@@ -1,19 +1,20 @@
 #include "./include/ThreadPool.h"
+
 #include <mutex>
 
 ThreadPool::ThreadPool(unsigned int size) {
-    for (int i = 0; i < size; ++i) {
-        threads.emplace_back(std::thread([this](){
+    for (unsigned int i = 0; i < size; ++i) {
+        threads_.emplace_back(std::thread([this](){
             while (true) {
                 std::function<void()> task;
                 {
-                    std::unique_lock<std::mutex> lock(tasks_mtx);
-                    cv.wait(lock, [this](){
-                        return stop_ || !tasks.empty();
+                    std::unique_lock<std::mutex> lock(tasks_mtx_);
+                    cv_.wait(lock, [this](){
+                        return stop_ || !tasks_.empty();
                     });
-                    if (stop_ && tasks.empty()) return;
-                    task = tasks.front();
-                    tasks.pop();
+                    if (stop_ && tasks_.empty()) return;
+                    task = tasks_.front();
+                    tasks_.pop();
                 }
                 task();
             }
@@ -23,10 +24,10 @@ ThreadPool::ThreadPool(unsigned int size) {
 
 ThreadPool::~ThreadPool() {
     {
-        std::unique_lock<std::mutex> lock(tasks_mtx);
+        std::unique_lock<std::mutex> lock(tasks_mtx_);
         stop_ = true;
     }
-    cv.notify_all();
+    cv_.notify_all();
     for (std::thread &th : threads)
         if (th.joinable())
             th.join();

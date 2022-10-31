@@ -7,15 +7,15 @@ class Socket;
 class Channel;
 class Acceptor
 {
-private:
-    EventLoop *loop;
-    Socket *sock;
-    Channel *acceptChannel;
-    std::function<void(Socket*)> newConnCB;
 public:
-    Acceptor(EventLoop *loop);
+    explicit Acceptor(EventLoop *loop);
     ~Acceptor();
 
-    void setNewConnCallback(std::function<void(Socket*)> const &callback); //TODO: void(int)?
-    void acceptConn();
+    void SetNewConnCallback(std::function<void(Socket*)> const &callback); //TODO: void(int)?
+    void AcceptConn();
+private:
+    EventLoop *loop_{nullptr};
+    Socket *sock_{nullptr};
+    Channel *accept_channel_{nullptr};
+    std::function<void(Socket*)> new_connection_callback_;
 };

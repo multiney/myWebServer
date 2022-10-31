@@ -9,16 +9,16 @@ class Buffer;
 class Connection
 {
 private:
-    Channel *channel;
-    Socket *sock;
-    EventLoop *loop;
-    std::function<void(int)> delConnCallback;
-    Buffer *readBuffer;
+    EventLoop *loop_;
+    Socket *sock_;
+    Channel *channel_;
+    Buffer *read_buffer_;
+    std::function<void(int)> del_connection_callback_;
 public:
     Connection(EventLoop *_loop, Socket *_sock);
     ~Connection();
 
-    void setDelConnectionCallback(std::function<void(int)> const &callback);
-    void echo();
-    void send();
+    void SetDelConnectionCallback(std::function<void(int)> const &callback);
+    void Echo();
+    void Send();
 };

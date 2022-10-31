@@ -5,15 +5,15 @@
 class Buffer
 {
 private:
-    std::string buf;
+    std::string buf_;
 public:
     Buffer() = default;
     ~Buffer() = default;
 
-    void append(const char* _str);
-    ssize_t size();
-    const char* c_str();
-    void clear();
-    void getLine();
-    void setBuf(const char*);
+    void Append(const char* _str);
+    size_t Size();
+    const char* CStr();
+    void Clear();
+    void GetLine();
+    void SetBuf(const char*);
 };

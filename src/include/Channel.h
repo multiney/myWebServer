@@ -6,27 +6,27 @@ class EventLoop;
 class Channel
 {
 private:
-    EventLoop *loop;
-    int fd;
-    uint32_t events;
-    uint32_t ready;
-    bool inEpoll;
-    std::function<void()> readCallback;
-    std::function<void()> writeCallback;
+    EventLoop *loop_;
+    int fd_;
+    uint32_t events_;
+    uint32_t ready_;
+    bool in_epoll_;
+    std::function<void()> read_callback_;
+    std::function<void()> write_callback_;
 public:
     Channel(EventLoop *loop, int sockfd);
-    ~Channel();
+    ~Channel() = default;
 
-    void enableRead();
-    void handleEvent();
+    void EnableRead();
+    void HandleEvent();
 
-    int getFd();
-    uint32_t getEvents();
-    uint32_t getReady();
-    bool getInEpoll();
+    int GetFd();
+    uint32_t GetEvents();
+    uint32_t GetReady();
+    bool GetInEpoll();
 
-    void setReady(uint32_t ev);
-    void setInEpoll(bool in = true);
-    void useET();
-    void setReadCallback(std::function<void()> const &callback);
+    void SetReady(uint32_t ready);
+    void SetInEpoll(bool inEpoll = true);
+    void UseET();
+    void SetReadCallback(std::function<void()> const &callback);
 };

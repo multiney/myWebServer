@@ -1,9 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <memory>
-#include <stdexcept>
-#include <utility>
 #include <vector>
 #include <queue>
 #include <thread>
@@ -14,35 +11,35 @@
 class ThreadPool
 {
 private:
-    std::vector<std::thread> threads;
-    std::queue<std::function<void()>> tasks;
-    std::mutex tasks_mtx;
-    std::condition_variable cv;
+    std::vector<std::thread> threads_;
+    std::queue<std::function<void()>> tasks_;
+    std::mutex tasks_mtx_;
+    std::condition_variable cv_;
     bool stop_{false};
 public:
     explicit ThreadPool(unsigned int size = std::thread::hardware_concurrency());
     ~ThreadPool();
 
     template<class F, class... Args>
-    auto add(F &&f, Args... args)
+    auto Add(F &&f, Args... args)
     -> std::future<typename std::result_of<F(Args...)>::type>;
 };
 
 
 template<class F, class... Args>
-auto ThreadPool::add(F &&f, Args... args) -> std::future<typename std::result_of<F(Args...)>::type> {
+auto ThreadPool::Add(F &&f, Args... args) -> std::future<typename std::result_of<F(Args...)>::type> {
     using return_type = typename std::result_of<F(Args...)>::type;
     auto task = std::make_shared<std::packaged_task<return_type()>>(
             std::bind(std::forward<F>(f), std::forward<Args>(args)...)
             );
     std::future<return_type> ret = task->get_future();
     {
-        std::unique_lock<std::mutex> lock(tasks_mtx);
+        std::unique_lock<std::mutex> lock(tasks_mtx_);
         if (stop_)
             throw new std::runtime_error("equeue on stopped ThreadPool");
-        tasks.emplace([task](){ (*task)(); });
+        tasks_.emplace([task](){ (*task)(); });
     }
-    cv.notify_one();
+    cv_.notify_one();
     return ret;
 }
 

@@ -13,6 +13,6 @@ public:
     EventLoop();
     ~EventLoop();
 
-    void updateChannel(Channel *ch);
-    void loop();
+    void UpdateChannel(Channel *channel);
+    void Loop();
 };

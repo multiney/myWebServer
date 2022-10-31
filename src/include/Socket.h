@@ -22,14 +22,14 @@ private:
     int fd_{-1};
 public:
     Socket();
-    Socket(int fd);
+    explicit Socket(int sockfd);
     ~Socket();
 
-    void bind(InetAddress *addr);
-    void listen();
-    int accept(InetAddress *addr);
-    void connect(InetAddress *addr);
-    void setnonblocking();
+    void Bind(InetAddress *addr);
+    void Listen();
+    int Accept(InetAddress *addr);
+    void Connect(InetAddress *addr);
+    void Setnonblocking();
 
-    int getFd();
+    int GetFd();
 };

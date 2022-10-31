@@ -1,57 +1,54 @@
 #include "./include/Channel.h"
-#include "./include/EventLoop.h"
 
 #include <sys/epoll.h>
-#include <unistd.h>
 
-Channel::Channel(EventLoop *_loop, int _fd)
-    : loop(_loop), fd(_fd), events(0), ready(0), inEpoll(false) {
+#include "./include/EventLoop.h"
+
+Channel::Channel(EventLoop *_loop, int sockfd)
+    : loop_(_loop), fd_(sockfd), events_(0), ready_(0), in_epoll_(false) {
 
 }
 
-Channel::~Channel() {
+void Channel::SetReadCallback(std::function<void ()> const &callback) {
+    read_callback_ = callback;
 }
 
-void Channel::setReadCallback(std::function<void ()> const &callback) {
-    readCallback = callback;
+void Channel::EnableRead() {
+    events_ |= EPOLLIN | EPOLLPRI;
+    loop_->UpdateChannel(this);
 }
 
-void Channel::enableRead() {
-    events |= EPOLLIN | EPOLLPRI;
-    loop->updateChannel(this);
+void Channel::UseET() {
+    events_ |= EPOLLET;
+    loop_->UpdateChannel(this);
 }
 
-void Channel::useET() {
-    events |= EPOLLET;
-    loop->updateChannel(this);
-}
-
-void Channel::handleEvent() {
-    if (ready & (EPOLLIN | EPOLLPRI)) {
-        readCallback();
+void Channel::HandleEvent() {
+    if (ready_ & (EPOLLIN | EPOLLPRI)) {
+        read_callback_();
     }
 }
 
-int Channel::getFd() {
-    return fd;
+int Channel::GetFd() {
+    return fd_;
 }
 
-uint32_t Channel::getEvents() {
-    return events;
+uint32_t Channel::GetEvents() {
+    return events_;
 }
 
-uint32_t Channel::getReady() {
-    return ready;
+uint32_t Channel::GetReady() {
+    return ready_;
 }
 
-void Channel::setReady(uint32_t _ready) {
-    ready = _ready;
+void Channel::SetReady(uint32_t ready) {
+    ready_ = ready;
 }
 
-bool Channel::getInEpoll() {
-    return inEpoll;
+bool Channel::GetInEpoll() {
+    return in_epoll_;
 }
 
-void Channel::setInEpoll(bool _in) {
-    inEpoll = _in;
+void Channel::SetInEpoll(bool inEpoll) {
+    in_epoll_ = inEpoll;
 }

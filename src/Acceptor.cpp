@@ -1,40 +1,39 @@
 #include "./include/Acceptor.h"
+
+#include <functional>
+
 #include "./include/EventLoop.h"
 #include "./include/Socket.h"
 #include "./include/Channel.h"
-#include "./include/Util.h"
 
-#include <functional>
-#include <string.h>
-#include <sys/socket.h>
 
-Acceptor::Acceptor(EventLoop *_loop) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
-    sock = new Socket();
+Acceptor::Acceptor(EventLoop *loop)
+    : loop_(loop), sock_(new Socket()), accept_channel_(new Channel(loop_, sock_->GetFd())) { // should be initialized in a member initializer of the constructor
     InetAddress *addr = new InetAddress("127.0.0.1", 8888);
-    sock->bind(addr);
-    sock->listen();
+    sock_->Bind(addr);
+    sock_->Listen();
     //sock->setnonblocking();
-    acceptChannel = new Channel(loop, sock->getFd());
-    std::function<void()> cb = std::bind(&Acceptor::acceptConn, this);
-    acceptChannel->setReadCallback(cb);
-    acceptChannel->enableRead();
+    // accept_channel_ = new Channel(loop_, sock_->getFd());
+    std::function<void()> callback = std::bind(&Acceptor::AcceptConn, this);
+    accept_channel_->SetReadCallback(callback);
+    accept_channel_->EnableRead();
     delete addr;
 }
 
 Acceptor::~Acceptor() {
-    delete sock;
-    delete acceptChannel;
+    delete sock_;
+    delete accept_channel_;
 }
 
-void Acceptor::setNewConnCallback(std::function<void (Socket*)> const &callback) {
-    newConnCB = callback;
+void Acceptor::SetNewConnCallback(std::function<void (Socket*)> const &callback) {
+    new_connection_callback_ = callback;
 }
 
-void Acceptor::acceptConn() {
+void Acceptor::AcceptConn() {
     InetAddress *clnt_addr = new InetAddress();
-    Socket *clnt_sock = new Socket(sock->accept(clnt_addr));
-    printf("new client fd %d IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr->GetAddr().sin_addr), ntohs(clnt_addr->GetAddr().sin_port));
-    clnt_sock->setnonblocking();
-    newConnCB(clnt_sock);
+    Socket *clnt_sock = new Socket(sock_->Accept(clnt_addr));
+    printf("new client fd %d IP: %s Port: %d\n", clnt_sock->GetFd(), inet_ntoa(clnt_addr->GetAddr().sin_addr), ntohs(clnt_addr->GetAddr().sin_port));
+    clnt_sock->Setnonblocking();
+    new_connection_callback_(clnt_sock);
     delete clnt_addr;
 }
