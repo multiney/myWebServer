@@ -1,9 +1,9 @@
-#include "Connection.h"
-#include "Buffer.h"
-#include "EventLoop.h"
-#include "Channel.h"
-#include "Socket.h"
-#include "Util.h"
+#include "./include/Connection.h"
+#include "./include/Buffer.h"
+#include "./include/EventLoop.h"
+#include "./include/Channel.h"
+#include "./include/Socket.h"
+#include "./include/Util.h"
 
 #include <cstring>
 #include <functional>
@@ -19,7 +19,7 @@ Connection::Connection(EventLoop *_loop, Socket *_sock)
     channel->useET();
     std::function<void()> cb = std::bind(&Connection::echo, this);
     channel->setReadCallback(cb);
-    channel->setUseThreadPool(true);
+    //channel->setUseThreadPool(true);
     readBuffer = new Buffer();
 }
 
@@ -29,15 +29,15 @@ Connection::~Connection() {
     delete readBuffer;
 }
 
-void Connection::setDelConnectionCallback(std::function<void(int)> _cb) {
-    delConnCallback = _cb;
+void Connection::setDelConnectionCallback(std::function<void(int)> const &callback) {
+    delConnCallback = callback;
 }
 
 void Connection::echo() {
     char buf[BUF_SIZE];
     int fd = sock->getFd();
     while (true) {
-        bzero(&buf, sizeof(buf));
+        memset(&buf, 0, sizeof(buf));
         ssize_t bytes_read = read(fd, buf, sizeof(buf));
         if (bytes_read > 0) {
             readBuffer->append(buf);
@@ -47,7 +47,8 @@ void Connection::echo() {
         } else if (bytes_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
             //printf("finish reading once, errno: %d\n", errno);
             printf("message from client fd %d : %s\n", fd, readBuffer->c_str());
-            errif(write(fd, readBuffer->c_str(), readBuffer->size()) == -1, "socket write error");
+            //errif(write(fd, readBuffer->c_str(), readBuffer->size()) == -1, "socket write error");
+            send();
             readBuffer->clear();
             break;
         } else if (bytes_read == 0) {

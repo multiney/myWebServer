@@ -18,9 +18,9 @@ private:
     std::queue<std::function<void()>> tasks;
     std::mutex tasks_mtx;
     std::condition_variable cv;
-    bool stop;
+    bool stop_{false};
 public:
-    ThreadPool(int size = 10);
+    explicit ThreadPool(unsigned int size = std::thread::hardware_concurrency());
     ~ThreadPool();
 
     template<class F, class... Args>
@@ -38,7 +38,7 @@ auto ThreadPool::add(F &&f, Args... args) -> std::future<typename std::result_of
     std::future<return_type> ret = task->get_future();
     {
         std::unique_lock<std::mutex> lock(tasks_mtx);
-        if (stop)
+        if (stop_)
             throw new std::runtime_error("equeue on stopped ThreadPool");
         tasks.emplace([task](){ (*task)(); });
     }

@@ -7,8 +7,8 @@ class Buffer
 private:
     std::string buf;
 public:
-    Buffer();
-    ~Buffer();
+    Buffer() = default;
+    ~Buffer() = default;
 
     void append(const char* _str);
     ssize_t size();

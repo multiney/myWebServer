@@ -1,19 +1,19 @@
-#include "Channel.h"
-#include "EventLoop.h"
+#include "./include/Channel.h"
+#include "./include/EventLoop.h"
 
 #include <sys/epoll.h>
 #include <unistd.h>
 
 Channel::Channel(EventLoop *_loop, int _fd)
-    : loop(_loop), fd(_fd), events(0), ready(0), inEpoll(false), useThreadPool(true) {
+    : loop(_loop), fd(_fd), events(0), ready(0), inEpoll(false) {
 
 }
 
 Channel::~Channel() {
 }
 
-void Channel::setReadCallback(std::function<void ()> _cb) {
-    readCallback = _cb;
+void Channel::setReadCallback(std::function<void ()> const &callback) {
+    readCallback = callback;
 }
 
 void Channel::enableRead() {
@@ -28,10 +28,7 @@ void Channel::useET() {
 
 void Channel::handleEvent() {
     if (ready & (EPOLLIN | EPOLLPRI)) {
-        if (useThreadPool)
-            loop->addThread(readCallback);
-        else
-            readCallback();
+        readCallback();
     }
 }
 
@@ -57,8 +54,4 @@ bool Channel::getInEpoll() {
 
 void Channel::setInEpoll(bool _in) {
     inEpoll = _in;
-}
-
-void Channel::setUseThreadPool(bool use) {
-    useThreadPool = use;
 }

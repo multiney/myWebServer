@@ -1,7 +1,7 @@
-#include "ThreadPool.h"
+#include "./include/ThreadPool.h"
 #include <mutex>
 
-ThreadPool::ThreadPool(int size) : stop(false) {
+ThreadPool::ThreadPool(unsigned int size) {
     for (int i = 0; i < size; ++i) {
         threads.emplace_back(std::thread([this](){
             while (true) {
@@ -9,9 +9,9 @@ ThreadPool::ThreadPool(int size) : stop(false) {
                 {
                     std::unique_lock<std::mutex> lock(tasks_mtx);
                     cv.wait(lock, [this](){
-                        return stop || !tasks.empty();
+                        return stop_ || !tasks.empty();
                     });
-                    if (stop && tasks.empty()) return;
+                    if (stop_ && tasks.empty()) return;
                     task = tasks.front();
                     tasks.pop();
                 }
@@ -24,7 +24,7 @@ ThreadPool::ThreadPool(int size) : stop(false) {
 ThreadPool::~ThreadPool() {
     {
         std::unique_lock<std::mutex> lock(tasks_mtx);
-        stop = true;
+        stop_ = true;
     }
     cv.notify_all();
     for (std::thread &th : threads)

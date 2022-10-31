@@ -13,9 +13,9 @@ private:
     Channel *acceptChannel;
     std::function<void(Socket*)> newConnCB;
 public:
-    Acceptor(EventLoop*);
+    Acceptor(EventLoop *loop);
     ~Acceptor();
 
-    void setNewConnCallback(std::function<void(Socket*)> _cb);
+    void setNewConnCallback(std::function<void(Socket*)> const &callback); //TODO: void(int)?
     void acceptConn();
 };

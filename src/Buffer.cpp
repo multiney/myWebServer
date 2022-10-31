@@ -1,14 +1,6 @@
-#include "Buffer.h"
+#include "./include/Buffer.h"
 
 #include <iostream>
-
-Buffer::Buffer() {
-
-}
-
-Buffer::~Buffer() {
-
-}
 
 void Buffer::append(const char *_str) {
     buf.append(_str);

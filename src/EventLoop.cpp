@@ -1,33 +1,22 @@
-#include "EventLoop.h"
-#include "Channel.h"
-#include "Epoll.h"
-#include "ThreadPool.h"
+#include "./include/EventLoop.h"
+#include "./include/Channel.h"
+#include "./include/Epoll.h"
+#include "./include/ThreadPool.h"
 
 #include <vector>
 
-EventLoop::EventLoop() : ep(nullptr), quit(false) {
-    ep = new Epoll();
-    threadPool = new ThreadPool();
-}
+EventLoop::EventLoop() { epoll_ = new Epoll(); }
 
-EventLoop::~EventLoop() {
-    delete threadPool;
-    delete ep;
-}
+EventLoop::~EventLoop() { delete epoll_; }
 
-void EventLoop::updateChannel(Channel* channel) {
-    ep->updateChannel(channel);
-}
+void EventLoop::updateChannel(Channel* ch) { epoll_->updateChannel(ch); }
 
 void EventLoop::loop() {
-    std::vector<Channel*> chs;
-    while (!quit) {
-        chs = ep->poll();
+    std::vector<Channel*> chs; // TODO: inside while?
+    while (!quit_) {
+        chs = epoll_->poll();
         for (Channel* it : chs)
             it->handleEvent();
     }
 }
 
-void EventLoop::addThread(std::function<void ()> func) {
-    threadPool->add(func);
-}

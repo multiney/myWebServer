@@ -38,7 +38,7 @@ void oneClient(int msgs, int wait){
                 readBuffer->append(buf);
                 already_read += read_bytes;
             } else if(read_bytes == 0){         //EOF
-                printf("server disconnected!\n");
+                printf("client fd: %d, server disconnected!\n", sockfd);
                 exit(EXIT_SUCCESS);
             }
             if(already_read >= sendBuffer->size()){
