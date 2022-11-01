@@ -8,15 +8,15 @@
 #include <condition_variable>
 #include <future>
 
-class ThreadPool
-{
-private:
+class ThreadPool {
+ private:
     std::vector<std::thread> threads_;
     std::queue<std::function<void()>> tasks_;
     std::mutex tasks_mtx_;
     std::condition_variable cv_;
     bool stop_{false};
-public:
+
+ public:
     explicit ThreadPool(unsigned int size = std::thread::hardware_concurrency());
     ~ThreadPool();
 

@@ -3,9 +3,8 @@
 #include <functional>
 
 class EventLoop;
-class Channel
-{
-private:
+class Channel {
+ private:
     EventLoop *loop_;
     int fd_;
     uint32_t events_;
@@ -13,7 +12,8 @@ private:
     bool in_epoll_;
     std::function<void()> read_callback_;
     std::function<void()> write_callback_;
-public:
+
+ public:
     Channel(EventLoop *loop, int sockfd);
     ~Channel() = default;
 

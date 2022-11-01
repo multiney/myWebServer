@@ -1,85 +1,62 @@
-#include <iostream>
 #include <unistd.h>
-#include <string.h>
+
 #include <functional>
-#include "src/Util.h"
-#include "src/Buffer.h"
-#include "src/InetAddress.h"
-#include "src/Socket.h"
-#include "src/ThreadPool.h"
+#include <cstring>
+#include <iostream>
 
-using namespace std;
+#include "Socket.h"
+#include "ThreadPool.h"
+#include "Connection.h"
 
-void oneClient(int msgs, int wait){
+void OneClient(int msgs, int wait){
     Socket *sock = new Socket();
-    InetAddress *addr = new InetAddress("127.0.0.1", 8888);
-    sock->connect(addr);
-
-    int sockfd = sock->getFd();
-
-    Buffer *sendBuffer = new Buffer();
-    Buffer *readBuffer = new Buffer();
-
+    sock->Connect("127.0.0.1", 8888);
+    Connection *conn = new Connection(nullptr, sock);
     sleep(wait);
     int count = 0;
     while(count < msgs){
-        sendBuffer->setBuf("I'm client!");
-        ssize_t write_bytes = write(sockfd, sendBuffer->c_str(), sendBuffer->size());
-        if(write_bytes == -1){
-            printf("socket already disconnected, can't write any more!\n");
+        conn->SetSendBuffer("I'm client!");
+        conn->Write();
+        if (conn->GetState() == Connection::State::Closed) {
+            conn->Close();
             break;
         }
-        int already_read = 0;
-        char buf[1024];    //这个buf大小无所谓
-        while(true){
-            bzero(&buf, sizeof(buf));
-            ssize_t read_bytes = read(sockfd, buf, sizeof(buf));
-            if(read_bytes > 0){
-                readBuffer->append(buf);
-                already_read += read_bytes;
-            } else if(read_bytes == 0){         //EOF
-                printf("client fd: %d, server disconnected!\n", sockfd);
-                exit(EXIT_SUCCESS);
-            }
-            if(already_read >= sendBuffer->size()){
-                printf("count: %d, message from server: %s\n", count++, readBuffer->c_str());
-                break;
-            } 
-        }
-        readBuffer->clear();
+        conn->Read();
+        std::cout << "msg count" << ++count << ": " << conn->ReadBuffer() << std::endl;
     }
-    delete addr;
-    delete sock;
+    delete conn;
 }
 
 int main(int argc, char *argv[]) {
     int threads = 100;
     int msgs = 100;
     int wait = 0;
-    int o;
+    int o = -1;
     const char *optstring = "t:m:w:";
     while ((o = getopt(argc, argv, optstring)) != -1) {
         switch (o) {
             case 't':
-                threads = stoi(optarg);
+                threads = std::stoi(optarg);
                 break;
             case 'm':
-                msgs = stoi(optarg);
+                msgs = std::stoi(optarg);
                 break;
             case 'w':
-                wait = stoi(optarg);
+                wait = std::stoi(optarg);
                 break;
             case '?':
                 printf("error optopt: %c\n", optopt);
                 printf("error opterr: %d\n", opterr);
                 break;
+            default:
+                break;
         }
     }
 
     ThreadPool *poll = new ThreadPool(threads);
-    std::function<void()> func = std::bind(oneClient, msgs, wait);
+    std::function<void()> func = std::bind(OneClient, msgs, wait);
     for(int i = 0; i < threads; ++i){
-        poll->add(func);
+        poll->Add(func);
     }
     delete poll;
     return 0;

@@ -2,11 +2,11 @@
 
 #include <string>
 
-class Buffer
-{
-private:
+class Buffer {
+ private:
     std::string buf_;
-public:
+
+ public:
     Buffer() = default;
     ~Buffer() = default;
 
